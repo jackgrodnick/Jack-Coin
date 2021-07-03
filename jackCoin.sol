@@ -2,91 +2,89 @@ pragma solidity ^0.4.18;
 
 
 contract jackCoin {
-    function jackCoin public {
-        mapping (address => uint256) public balanceOf;
 
-        string public name = "Jack Coin";
-        string public symbol = "Jack";
-        uint256 public max_supply = 210000000000000000;
-        uint256 public unspent_supply = 0;
-        uint256 public spendable_supply = 0;
-        uint256 public circulating_supply = 0;
-        uint256 public decimals = 9;
-        uint256 public reward = 10000000000;
-        uint256 public timeOfLastHalving = now;
-        uint public timeOfLastIncrease = now;
+    mapping (address => uint256) public balanceOf;
+
+    string public name = "Jack Coin";
+    string public symbol = "Jack";
+    uint256 public max_supply = 210000000000000000;
+    uint256 public unspent_supply = 0;
+    uint256 public spendable_supply = 0;
+    uint256 public circulating_supply = 0;
+    uint256 public decimals = 9;
+    uint256 public reward = 10000000000;
+    uint256 public timeOfLastHalving = now;
+    uint public timeOfLastIncrease = now;
 
 
-        event Transfer(address indexed from, address index to, uint256 value);
-        event Mint(address indexed from, uint256 value);
+    event Transfer(address indexed from, address indexed to, uint256 value);
+    event Mint(address indexed from, uint256 value);
 
-        function jackCoin public {
+    function jackCoin() public {
+        timeOfLastHalving = now;
+    }
+
+    function updateSupply() internal returns (uint256) {
+
+        if (now - timeOfLastHalving >= 2100000 minutes) {
+            reward /= 2;
             timeOfLastHalving = now;
         }
 
-        function updateSupply() internal returns (uint256) {
-
-            if (now - timeOfLastHalving >= 2100000 minutes) {
-                reward /= 2;
-                timeOfLastHalving = now;
-            }
-
-            if (now - timeOfLastIncrease >= 1 seconds) {
-                uint256 increaseAmount  = ((now - timeOfLastIncrease) / 1 seconds) * reward;
-                spendable_supply += increaseAmount;
-                unspent_supply += increaseAmount;
-                timeOfLastIncrease = now;
-            }
-
-            circulating_supply = spendable_supply - unspent_supply;
-
-            return circulating_supply
+        if (now - timeOfLastIncrease >= 1 seconds) {
+            uint256 increaseAmount  = ((now - timeOfLastIncrease) / 1 seconds) * reward;
+            spendable_supply += increaseAmount;
+            unspent_supply += increaseAmount;
+            timeOfLastIncrease = now;
         }
 
-        function transfer(address _to, uint _value) public {
-            require(balanceOf[msg.sender] >= _value);
-            require(balanceOf[_to] + _value >= balanceOf[_to]);
-            balanceOf[msg.sender] -= _value;
+        circulating_supply = spendable_supply - unspent_supply;
 
-            updateSupply();
-
-            Transfer(msg.sender, _to, _value);
-        }
-
-
-        function mint() pulbic payable {
-            require(balanceOf[msg.sender] + _value >= balanceOf[msg.sender]);
-            uint256 _value = msg.value / 100000000;
-
-            updateSupply();
-
-            require(unspent_supply - _value <= unspent_supply);
-            unspent_supply -= _value;
-            balanceOf[msg.sender] += _value;
-
-            updateSupply();
-
-            Mint(msg.sender, _value);
-        }
-
-        function withdraw(uint256 amountToWithdraw) public returns (bool) {
-
-
-            require(balanceOf[msg.sender] >= amountToWithdraw);
-            require(balanceOf[msg.sender] - amountToWithdraw <= balanceOf[msg.sender]);
-
-            balanceOf[msg.sender] -= amountToWithdraw;
-
-            unspent_supply += amountToWithdraw;
-
-            amountToWithdraw *= 100000000;
-
-            msg.sender.transfer(amountToWithdraw);
-
-            updateSupply();
-
-
-            return true;
-        }
+        return circulating_supply;
     }
-}
+
+    function transfer(address _to, uint _value) public {
+        require(balanceOf[msg.sender] >= _value);
+        require(balanceOf[_to] + _value >= balanceOf[_to]);
+        balanceOf[msg.sender] -= _value;
+
+        updateSupply();
+
+        Transfer(msg.sender, _to, _value);
+    }
+
+
+    function mint() public payable {
+        require(balanceOf[msg.sender] + _value >= balanceOf[msg.sender]);
+        uint256 _value = msg.value / 100000000;
+
+        updateSupply();
+
+        require(unspent_supply - _value <= unspent_supply);
+        unspent_supply -= _value;
+        balanceOf[msg.sender] += _value;
+
+        updateSupply();
+
+        Mint(msg.sender, _value);
+    }
+
+    function withdraw(uint256 amountToWithdraw) public returns (bool) {
+
+
+        require(balanceOf[msg.sender] >= amountToWithdraw);
+        require(balanceOf[msg.sender] - amountToWithdraw <= balanceOf[msg.sender]);
+
+        balanceOf[msg.sender] -= amountToWithdraw;
+
+        unspent_supply += amountToWithdraw;
+
+        amountToWithdraw *= 100000000;
+
+        msg.sender.transfer(amountToWithdraw);
+
+        updateSupply();
+
+
+        return true;
+    }
