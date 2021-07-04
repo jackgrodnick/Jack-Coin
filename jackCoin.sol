@@ -88,4 +88,4 @@ contract jackCoin {
 
         return true;
     }
-]
+}
